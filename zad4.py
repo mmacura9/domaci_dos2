@@ -15,6 +15,7 @@ from skimage import io
 from skimage import color
 
 def find_max(matrix: np.array) -> int or float:
+    return np.max(matrix)
     output = matrix[0][0]
     for i in range(matrix.shape[0]):
         for j in range(matrix.shape[1]):
@@ -23,6 +24,7 @@ def find_max(matrix: np.array) -> int or float:
     return output
 
 def find_min(matrix: np.array) -> int or float:
+    return np.min(matrix)
     output = matrix[0][0]
     for i in range(matrix.shape[0]):
         for j in range(matrix.shape[1]):
@@ -30,18 +32,19 @@ def find_min(matrix: np.array) -> int or float:
                 output = matrix[i][j]
     return output
 
-def find_median(matrix: np.array, window: int, i, j) -> int or float:
+def find_median(matrix: np.array, window: int) -> int or float:
     arr = matrix.flatten()
-    if not arr.shape[0]==9:
-        print(i,j)
-        print(":(")
-    for i in range(arr.shape[0]):
-        for j in range(i, arr.shape[0]):
-            if(arr[j]<arr[i]):
-                x = arr[i]
-                arr[i] = arr[j]
-                arr[j] = x
-    return arr[math.floor(window*window/2)]
+    middle = math.floor(window*window/2)
+    # for i in range(arr.shape[0]):
+    #     for j in range(i, arr.shape[0]):
+    #         if(arr[j]<arr[i]):
+    #             x = arr[i]
+    #             arr[i] = arr[j]
+    #             arr[j] = x
+    #     if i == middle:
+    #         return arr[middle]
+    arr = np.sort(arr)
+    return arr[middle]
 
 def make_mat(img_in: np.array, s_max: int, i: int, j: int) -> np.array:
     window = math.floor(s_max/2)
@@ -51,8 +54,8 @@ def make_mat(img_in: np.array, s_max: int, i: int, j: int) -> np.array:
     if i+window+1 > img_in.shape[0] and j+window+1 <= img_in.shape[1] and j-window>=0:
         mat = img_in[i-window:, j-window:j+window+1]
         con = img_in[2*img_in.shape[0]-i-window-1:, j-window:j+window+1]
-        
         return np.concatenate((mat, con), axis=0)
+    
     if i-window >= 0 and i+window+1 <= img_in.shape[0] and j+window+1 > img_in.shape[1]:
         mat = img_in[i-window:i+window+1, j-window:]
         con = img_in[i-window:i+window+1, 2*img_in.shape[1]-j-window-1:]
@@ -95,25 +98,41 @@ def make_mat(img_in: np.array, s_max: int, i: int, j: int) -> np.array:
     con2 = mat[:window-i, :]
     return np.concatenate((mat, con2), axis=0)
 
-def do_non_adaptive_median(img_in: np.array, window: int) -> np.array:
-    for i in range(img_in.shape[0]):
-        for j in range(img_in.shape[1]):
-            matrix = make_mat(img_in, window, i, j)
-            if not img_in[i][j] == find_max(matrix) and not img_in[i][j] == find_min(matrix):
-                continue
-            img_in[i][j] = find_median(matrix, window, i, j)
-    return img_in
-
 def dos_median(img_in: np.array, s_max: int, adaptive: bool) ->np.array:
+    img_out = np.zeros(img_in.shape)
     if not adaptive:
-        img_out = do_non_adaptive_median(img_in, s_max)
+        window = s_max
+        for i in range(img_in.shape[0]):
+            for j in range(img_in.shape[1]):
+                matrix = make_mat(img_in, window, i, j)
+                if not img_in[i][j] == find_max(matrix) and not img_in[i][j] == find_min(matrix):
+                    img_out[i][j]=img_in[i][j]
+                    continue
+                img_out[i][j] = find_median(matrix, window)
+    else:
+        for i in range(img_in.shape[0]):
+            for j in range(img_in.shape[1]):
+                window = 3
+                while window<=s_max:
+                    matrix = make_mat(img_in, window, i, j)
+                    if not img_in[i][j] == find_max(matrix) and not img_in[i][j] == find_min(matrix):
+                        img_out[i][j]=img_in[i][j]
+                        break
+                    pom = find_median(matrix, window)
+                    if pom == find_max(matrix) or pom == find_min(matrix):
+                        window=window+2
+                        continue
+                    img_out[i][j] = pom
+                    break
     return img_out
         
 def add_noise(img: np.array) -> np.array:
  
     # Getting the dimensions of the image
     row , col = img.shape
-     
+    max_value=255
+    if type(img[0][0]) == np.float64:
+        max_value=1
     # Randomly pick some pixels in the
     # image for coloring them white
     # Pick a random number between 300 and 10000
@@ -127,7 +146,7 @@ def add_noise(img: np.array) -> np.array:
         x_coord=random.randint(0, col - 1)
          
         # Color that pixel to white
-        img[y_coord][x_coord] = 1
+        img[y_coord][x_coord] = max_value
          
     # Randomly pick some pixels in
     # the image for coloring them black
@@ -147,9 +166,15 @@ def add_noise(img: np.array) -> np.array:
     return img
 
 if __name__ == "__main__":
-    img_in = imread('queen_dress.jpg')
+    adaptive = True
+    img_in = imread('zad4/gardos.jpg')
     img_in = color.rgb2gray(img_in)
-    img_in = add_noise(img_in)
-    imsave("queen_noise.jpg", img_in, cmap = 'gray')
-    img_out = dos_median(img_in, 3, False)
-    imsave("queen_output.jpg", img_out, cmap = 'gray')
+    img_noise = add_noise(img_in)
+    imsave("zad4/gardos_noise.jpg", img_noise, cmap = 'gray')
+    if not adaptive:
+        img_out = dos_median(img_noise, 7, True)
+        imsave("zad4/gardos_output_not_adaptive.jpg", img_out, cmap = 'gray')
+    else:
+        img_out = dos_median(img_noise, 7, True)
+        imsave("zad4/gardos_output_adaptive.jpg", img_out, cmap = 'gray')
+        
