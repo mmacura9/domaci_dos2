@@ -166,15 +166,14 @@ def add_noise(img: np.array) -> np.array:
     return img
 
 if __name__ == "__main__":
-    adaptive = True
+    adaptive = False
     img_in = imread('zad4/gardos.jpg')
     img_in = color.rgb2gray(img_in)
     img_noise = add_noise(img_in)
     imsave("zad4/gardos_noise.jpg", img_noise, cmap = 'gray')
+    img_out = dos_median(img_noise, 7, adaptive)
     if not adaptive:
-        img_out = dos_median(img_noise, 7, True)
         imsave("zad4/gardos_output_not_adaptive.jpg", img_out, cmap = 'gray')
     else:
-        img_out = dos_median(img_noise, 7, True)
         imsave("zad4/gardos_output_adaptive.jpg", img_out, cmap = 'gray')
         
