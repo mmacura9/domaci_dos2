@@ -16,20 +16,20 @@ from skimage import color
 
 def find_max(matrix: np.array) -> int or float:
     return np.max(matrix)
-    output = matrix[0][0]
+    output = matrix[0, 0]
     for i in range(matrix.shape[0]):
         for j in range(matrix.shape[1]):
-            if matrix[i][j]>output:
-                output = matrix[i][j]
+            if matrix[i, j]>output:
+                output = matrix[i, j]
     return output
 
 def find_min(matrix: np.array) -> int or float:
     return np.min(matrix)
-    output = matrix[0][0]
+    output = matrix[0, 0]
     for i in range(matrix.shape[0]):
         for j in range(matrix.shape[1]):
-            if matrix[i][j]<output:
-                output = matrix[i][j]
+            if matrix[i, j]<output:
+                output = matrix[i, j]
     return output
 
 def find_median(matrix: np.array, window: int) -> int or float:
@@ -106,21 +106,21 @@ def dos_median(img_in: np.array, s_max: int, adaptive: bool) ->np.array:
             for j in range(img_in.shape[1]):
                 matrix = make_mat(img_in, window, i, j)
                 
-                img_out[i][j] = find_median(matrix, window)
+                img_out[i, j] = find_median(matrix, window)
     else:
         for i in range(img_in.shape[0]):
             for j in range(img_in.shape[1]):
                 window = 3
                 while window<=s_max:
                     matrix = make_mat(img_in, window, i, j)
-                    if not img_in[i][j] == find_max(matrix) and not img_in[i][j] == find_min(matrix):
-                        img_out[i][j]=img_in[i][j]
+                    if not img_in[i, j] == find_max(matrix) and not img_in[i, j] == find_min(matrix):
+                        img_out[i, j]=img_in[i, j]
                         break
                     pom = find_median(matrix, window)
-                    if pom == find_max(matrix) or pom == find_min(matrix):
+                    if not window == s_max and (pom == find_max(matrix) or pom == find_min(matrix)):
                         window=window+2
                         continue
-                    img_out[i][j] = pom
+                    img_out[i, j] = pom
                     break
     return img_out
         
@@ -129,7 +129,7 @@ def add_noise(img: np.array) -> np.array:
     # Getting the dimensions of the image
     row , col = img.shape
     max_value=255
-    if type(img[0][0]) == np.float64:
+    if type(img[0, 0]) == np.float64:
         max_value=1
     # Randomly pick some pixels in the
     # image for coloring them white
@@ -144,7 +144,7 @@ def add_noise(img: np.array) -> np.array:
         x_coord=random.randint(0, col - 1)
          
         # Color that pixel to white
-        img[y_coord][x_coord] = max_value
+        img[y_coord, x_coord] = max_value
          
     # Randomly pick some pixels in
     # the image for coloring them black
@@ -159,7 +159,7 @@ def add_noise(img: np.array) -> np.array:
         x_coord=random.randint(0, col - 1)
          
         # Color that pixel to black
-        img[y_coord][x_coord] = 0
+        img[y_coord, x_coord] = 0
          
     return img
 
