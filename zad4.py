@@ -105,9 +105,7 @@ def dos_median(img_in: np.array, s_max: int, adaptive: bool) ->np.array:
         for i in range(img_in.shape[0]):
             for j in range(img_in.shape[1]):
                 matrix = make_mat(img_in, window, i, j)
-                if not img_in[i][j] == find_max(matrix) and not img_in[i][j] == find_min(matrix):
-                    img_out[i][j]=img_in[i][j]
-                    continue
+                
                 img_out[i][j] = find_median(matrix, window)
     else:
         for i in range(img_in.shape[0]):

@@ -8,6 +8,7 @@ import skimage
 from pylab import *
 import numpy as np
 from skimage import io
+import math
 
 import matplotlib.pyplot as plt
 
@@ -23,6 +24,7 @@ if __name__ == "__main__":
     # FFT slike i kernela
     img_fft = np.fft.fftshift(np.fft.fft2(img_in))
     kernel_fft = np.fft.fftshift(np.fft.fft2(kernel))
+    kernel_fft[math.floor(kernel_fft.shape[0]/2), math.floor(kernel_fft.shape[1]/2)] = 1
     
     plt.figure()
     io.imshow(log(1+abs(kernel_fft)), cmap = 'gray')
@@ -31,7 +33,7 @@ if __name__ == "__main__":
     io.imshow(log(1+abs(np.fft.fftshift(np.fft.fft2(kernel1)))), cmap = 'gray')
     
     #Vinerov filtar
-    F_est_fft = (abs(kernel_fft)**2/(abs(kernel_fft)**2+0.001))*img_fft/kernel_fft
+    F_est_fft = img_fft/kernel_fft*(abs(kernel_fft)**2/(abs(kernel_fft)**2+1))
     f_est = np.fft.ifft2(np.fft.ifftshift(F_est_fft))
     
     plt.figure()
