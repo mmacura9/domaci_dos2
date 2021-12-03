@@ -16,6 +16,7 @@ if __name__ == "__main__":
     img_in = skimage.img_as_float(io.imread('../sekvence/etf_blur.tif'))
     kernel = np.zeros(img_in.shape, dtype = float)
     kernel1 = skimage.img_as_float(io.imread('../sekvence/kernel.tif'))
+    kernel1 = kernel1/np.sum(kernel1)
     kernel[:kernel1.shape[0], :kernel1.shape[1]] = kernel1
     plt.figure()
     io.imshow(img_in)
@@ -24,7 +25,7 @@ if __name__ == "__main__":
     # FFT slike i kernela
     img_fft = np.fft.fftshift(np.fft.fft2(img_in))
     kernel_fft = np.fft.fftshift(np.fft.fft2(kernel))
-    kernel_fft[math.floor(kernel_fft.shape[0]/2), math.floor(kernel_fft.shape[1]/2)] = 1
+    # kernel_fft[math.floor(kernel_fft.shape[0]/2), math.floor(kernel_fft.shape[1]/2)] = 1
     
     plt.figure()
     io.imshow(log(1+abs(kernel_fft)), cmap = 'gray')
@@ -33,8 +34,11 @@ if __name__ == "__main__":
     io.imshow(log(1+abs(np.fft.fftshift(np.fft.fft2(kernel1)))), cmap = 'gray')
     
     #Vinerov filtar
-    F_est_fft = img_fft/kernel_fft*(abs(kernel_fft)**2/(abs(kernel_fft)**2+1))
+    F_est_fft = img_fft/kernel_fft*(abs(kernel_fft)**2/(abs(kernel_fft)**2+0.001))
     f_est = np.fft.ifft2(np.fft.ifftshift(F_est_fft))
+    
+    f_est[f_est<0] = 0
+    f_est[f_est>1] = 1
     
     plt.figure()
     io.imshow(real(f_est), cmap= 'gray')
