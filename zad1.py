@@ -6,12 +6,13 @@ Created on Sun Nov 28 13:10:10 2021
 """
 import skimage
 from skimage import io
+from skimage import color
 import matplotlib.pyplot as plt
 
 from pylab import *
 import numpy as np
 
-def noch_filtar(P: int, Q: int) -> np.array:
+def notch_filtar(P: int, Q: int) -> np.array:
     noch = np.zeros([P, Q])
     D0 = math.sqrt(700)
     D1 = math.sqrt(5000)
@@ -26,7 +27,7 @@ def noch_filtar(P: int, Q: int) -> np.array:
 
 def gauss_filtar(Q: int, P: int) -> np.array:
     gauss = np.zeros([P, Q])
-    D0 = 250
+    D0 = 100
     for u in range(Q):
         for v in range(P):
             D = (u - Q/2)**2 + (v - P/2)**2
@@ -44,18 +45,24 @@ def batervort_filtar(P: int, Q: int) -> np.array:
 
 if __name__ == "__main__":
     img_in = skimage.img_as_float(imread('../sekvence/half_tone.jpg'))
+    img_yuv = color.rgb2yuv(img_in)
     plt.figure(num=None, figsize=(8, 6), dpi=80)
-    io.imshow(img_in)
-    gauss = noch_filtar(img_in.shape[0], img_in.shape[1])
-    img_out_fft = np.zeros(img_in.shape, dtype = complex)
-    img_out = np.zeros(img_in.shape)
-    for i in range(3):
-        img_fft = np.fft.fftshift(np.fft.fft2(img_in[:, :, i]))
-        # img_amp = abs(img_fft)
-        img_out_fft[:, :, i] = img_fft*gauss
-        img_amp = abs(img_out_fft[:, :, i])
-        img_out[:, :, i] = np.fft.ifft2(np.fft.ifftshift(img_out_fft[:, :, i]))
-        output = "zad1/filtrated_fft_" + str(i) + ".jpg"
-        imsave(output, np.log(1+img_amp), cmap='gray');
+    io.imshow(img_yuv[:, :, 0])
+    notch = gauss_filtar(img_in.shape[0], img_in.shape[1])
+    img_out_fft = np.zeros(img_yuv[:, :, 0].shape, dtype = complex)
+    img_out = np.zeros(img_yuv.shape)
+    img_fft = np.fft.fftshift(np.fft.fft2(img_yuv[:, :, 0]))
+    # img_amp = abs(img_fft)
+    img_out_fft = img_fft*notch
+    img_amp = abs(img_out_fft)
+    img_out[:, :, 0] = real(np.fft.ifft2(np.fft.ifftshift(img_out_fft)))
+    img_out[:, :, 1:3] = img_yuv[:, :, 1:3]
+    output = "zad1/filtrated_fft.jpg"
+    imsave(output, np.log(1+img_amp), cmap='gray')
+    
+    img_out = color.yuv2rgb(img_out)
+    img_out[img_out > 1] = 1
+    img_out[img_out < 0] = 0
     plt.figure()
     io.imshow(img_out)
+    imsave("zad1/izlaz.jpg", img_out)
