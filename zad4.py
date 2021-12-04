@@ -45,7 +45,7 @@ def partition(arr, low, high) -> int:
     arr[i+1], arr[high] = arr[high], arr[i+1]
     return (i+1)
  
-def quick_sort(arr: np.array, low: int, high: int, middle: int) -> float:
+def quick_sort(arr: np.array, low: int, high: int, middle: int) -> int or float:
     if len(arr) == 1:
         return arr
     if low < high:
