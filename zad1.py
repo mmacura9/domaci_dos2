@@ -17,20 +17,20 @@ from scipy import ndimage
 
 def bandpass_filtar(P: int, Q: int) -> np.array:
     bandpass = np.zeros([P, Q], dtype=float)
-    D0 = math.sqrt(700)
-    D1 = 400
+    D0 = math.sqrt(1000)
+    D1 = 300
     for u in range(P):
         for v in range(Q):
             D = math.sqrt((u-P/2)**2 + (v-Q/2)**2)
             if D**2 > D0**2 and D**2 < D1**2:
-                bandpass[u, v] = exp(-D**2/700)
+                bandpass[u, v] = exp(-D**2/2000)
             else:
                 bandpass[u, v] = 1
     return bandpass
 
 def gauss_filtar(P: int, Q: int) -> np.array:
     gauss = np.zeros([P, Q])
-    sigma = 1000
+    sigma = 2000
     for u in range(P):
         for v in range(Q):
             D = (u - P/2)**2 + (v - Q/2)**2

@@ -115,24 +115,47 @@ def make_mat(img_in: np.array, s_max: int, i: int, j: int) -> np.array:
     return np.concatenate((mat, con2), axis=0)
 
 def dos_median(img_in: np.array, s_max: int, adaptive: bool) ->np.array:
+    """
+    
+
+    Parameters
+    ----------
+    img_in : np.array
+        An input image.
+    s_max : int
+        Maximum window size.
+    adaptive : bool
+        True -> adaptive algorithm.
+
+    Returns
+    -------
+    img_out : np.array
+        A filtrated image.
+
+    """
     img_out = np.zeros(img_in.shape)
     if not adaptive:
         window = s_max
         for i in range(img_in.shape[0]):
             for j in range(img_in.shape[1]):
+                # for each pixel make the window
                 matrix = make_mat(img_in, window, i, j)
-                
+                # filter the window
                 img_out[i, j] = find_median(matrix, window)
     else:
         for i in range(img_in.shape[0]):
             for j in range(img_in.shape[1]):
                 window = 3
+                # if the window is smaller than maximum size of the window, and additional cases inside the while
                 while window<=s_max:
+                    # for each pixel make a window
                     matrix = make_mat(img_in, window, i, j)
                     if not img_in[i, j] == find_max(matrix) and not img_in[i, j] == find_min(matrix):
                         img_out[i, j]=img_in[i, j]
                         break
+                    # find the median of the window
                     pom = find_median(matrix, window)
+                    # if the median is different from maximum and minimum in the window -> this is the solution
                     if not window == s_max and (pom == find_max(matrix) or pom == find_min(matrix)):
                         window=window+2
                         continue
