@@ -14,11 +14,24 @@ from scipy import ndimage
 from pylab import *
 import numpy as np
 
+def noise_surr_var(img_in: np.array, r: int) -> []:
+    box = np.ones([2*r+1, 2*r+1], dtype=float)/(2*r+1)**2
+    
+    box_filtar = ndimage.correlate(img_in, box)
+    square_box_filtar = ndimage.correlate(img_in**2, box)
+    
+    sigma_xy = square_box_filtar - box_filtar**2
+    
+    histogram, bins = np.histogram(sigma_xy.flatten(), bins=256)
+    arg = np.argmax(histogram)
+    
+    sigma_n = bins[arg]
+    return [sigma_n, sigma_xy]
 
 if __name__ == "__main__":
     img_in = skimage.img_as_float(io.imread('..\sekvence\lena_noise.tif'))
     io.imshow(img_in)
-    r = 3
+    r = 4
     box = np.ones([2*r+1, 2*r+1], dtype=float)/(2*r+1)**2
     
     box_filtar = ndimage.correlate(img_in, box)

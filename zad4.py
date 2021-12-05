@@ -141,10 +141,10 @@ def dos_median(img_in: np.array, s_max: int, adaptive: bool) ->np.array:
     return img_out
 
 if __name__ == "__main__":
-    adaptive = False
+    adaptive = True
     img_in = imread('zad4/gardos.jpg')
     img_in = color.rgb2gray(img_in)
-    img_noise = util.random_noise(img_in, mode="s&p", amount=0.2)
+    img_noise = util.random_noise(img_in, mode="s&p", amount=0.8)
     imsave("zad4/gardos_noise.jpg", img_noise, cmap = 'gray')
     img_out = dos_median(img_noise, 11, adaptive)
     if not adaptive:
